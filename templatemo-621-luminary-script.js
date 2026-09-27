@@ -116,7 +116,7 @@ function closeMenu() { if(!menuOpen) return; menuOpen=false; toggle.classList.re
 toggle.addEventListener('click', () => menuOpen ? closeMenu() : openMenu());
 menuLinks.forEach(l => l.addEventListener('click', closeMenu));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
-window.addEventListener('resize', () => { if (innerWidth > 1024) closeMenu(); });
+window.addEventListener('resize', () => { if (innerWidth > 1300) closeMenu(); });
 
 // ── Pricing toggle ──
 const pToggle = document.getElementById('pricingToggle');
@@ -140,39 +140,64 @@ function setPricing() {
 pToggle.addEventListener('click', setPricing);
 pToggle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPricing(); } });
 
+// ── Builds carousel ──
+const carousel = document.getElementById('buildsCarousel');
+if (carousel) {
+  const track = carousel.querySelector('.carousel-track');
+  const slides = carousel.querySelectorAll('.carousel-slide');
+  const dots = carousel.querySelectorAll('.carousel-dot');
+  const count = carousel.querySelector('.carousel-count');
+  let currentSlide = 0;
+  let carouselTimer;
+
+  function showSlide(index) {
+    currentSlide = (index + slides.length) % slides.length;
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    slides.forEach((slide, i) => slide.classList.toggle('active', i === currentSlide));
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentSlide);
+      dot.setAttribute('aria-selected', i === currentSlide);
+    });
+    count.textContent = `${String(currentSlide + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
+  }
+
+  function startCarousel() {
+    clearInterval(carouselTimer);
+    carouselTimer = setInterval(() => showSlide(currentSlide + 1), 5000);
+  }
+
+  carousel.querySelector('.carousel-prev').addEventListener('click', () => { showSlide(currentSlide - 1); startCarousel(); });
+  carousel.querySelector('.carousel-next').addEventListener('click', () => { showSlide(currentSlide + 1); startCarousel(); });
+  dots.forEach((dot, i) => dot.addEventListener('click', () => { showSlide(i); startCarousel(); }));
+  carousel.addEventListener('mouseenter', () => clearInterval(carouselTimer));
+  carousel.addEventListener('mouseleave', startCarousel);
+  carousel.addEventListener('focusin', () => clearInterval(carouselTimer));
+  carousel.addEventListener('focusout', event => { if (!carousel.contains(event.relatedTarget)) startCarousel(); });
+  showSlide(0);
+  startCarousel();
+}
+
 // ── FAQ accordion ──
 const faqItems = document.querySelectorAll('.faq-item');
 const faqToggleAll = document.getElementById('faqToggleAll');
-let allExpanded = false;
 
-document.querySelectorAll('.faq-question').forEach(btn => {
+faqItems.forEach(item => {
+  const btn = item.querySelector('.faq-question');
   btn.addEventListener('click', () => {
-    btn.parentElement.classList.toggle('open');
+    item.classList.toggle('open');
     updateFaqToggleLabel();
   });
 });
 
 faqToggleAll.addEventListener('click', () => {
-  allExpanded = !allExpanded;
-  if (allExpanded) {
-    // Staggered expand — slow cascade, each waits for the previous to start breathing
-    faqItems.forEach((item, i) => {
-      setTimeout(() => item.classList.add('open'), i * 220);
-    });
-  } else {
-    // Staggered collapse — reverse order
-    const total = faqItems.length;
-    faqItems.forEach((item, i) => {
-      setTimeout(() => item.classList.remove('open'), (total - 1 - i) * 60);
-    });
-  }
-  // Update label after all animations complete
-  setTimeout(updateFaqToggleLabel, faqItems.length * 220 + 100);
+  const shouldExpand = !Array.from(faqItems).every(item => item.classList.contains('open'));
+  faqItems.forEach(item => item.classList.toggle('open', shouldExpand));
+  updateFaqToggleLabel();
 });
 
 function updateFaqToggleLabel() {
   const openCount = document.querySelectorAll('.faq-item.open').length;
-  allExpanded = openCount === faqItems.length;
+  const allExpanded = openCount === faqItems.length;
   faqToggleAll.textContent = allExpanded ? 'Collapse All' : 'Expand All';
 }
 
