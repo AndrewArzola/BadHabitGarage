@@ -608,9 +608,12 @@ body.menu-open .top-nav { background: rgba(15,17,21,0.95); backdrop-filter: blur
 .carousel-footer {
   display: flex; align-items: center; justify-content: space-between; margin-top: 20px;
 }
-.carousel-dots { display: flex; gap: 8px; }
+.carousel-dots {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  min-width: 0; max-width: 100%;
+}
 .carousel-dot {
-  width: 28px; height: 3px; padding: 0; border: 0; background: var(--panel-border);
+  flex: 0 0 auto; width: 28px; height: 3px; padding: 0; border: 0; background: var(--panel-border);
   cursor: pointer; transition: background 0.4s ease, width 0.4s ease;
 }
 .carousel-dot.active { width: 48px; background: var(--silver); }
