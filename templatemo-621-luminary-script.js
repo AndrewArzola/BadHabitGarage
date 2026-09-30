@@ -158,7 +158,7 @@ if (carousel) {
       dot.classList.toggle('active', i === currentSlide);
       dot.setAttribute('aria-selected', i === currentSlide);
     });
-    count.textContent = `${String(currentSlide + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
+    if (count) count.textContent = `${String(currentSlide + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
   }
 
   function startCarousel() {
